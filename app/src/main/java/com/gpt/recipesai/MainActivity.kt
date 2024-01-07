@@ -14,14 +14,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +50,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.gpt.recipesai.data.models.Message
 import com.gpt.recipesai.data.network.GptCommunicator
 import com.gpt.recipesai.ui.theme.RecipesAITheme
@@ -62,7 +68,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(8.dp),
-//                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     val prompt = "Przepis na dziś: \n"
                     var gptResponse by remember {
@@ -127,13 +133,26 @@ fun MainUI(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = stringResource(id = R.string.command))
+        Text(text = stringResource(id = R.string.command), fontSize = 20.sp)
+        Button(
+            onClick = {
+                onButtonClick()
+            },
+            modifier = Modifier
+                .padding(start = 16.dp)
+                .height(32.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.generate),
+            )
+        }
+
     }
 
 }
 
 @Preview
 @Composable
-fun MainUIPreview(){
+fun MainUIPreview() {
     MainUI(messages = emptyList())
 }

@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">RecipesAI</string>
-    <string name="command">Generate a breakfast recipe!</string>
+    <string name="command">Breakfast recipe</string>
+    <string name="generate">Generate</string>
 </resources>

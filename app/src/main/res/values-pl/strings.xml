@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">Śniadania AI</string>
     <string name="command">Generuj nowe śniadanie!</string>
+    <string name="generate">Generuj</string>
+
 </resources>
