@@ -4,4 +4,13 @@
     <string name="command">Generuj nowe śniadanie!</string>
     <string name="generate">Generuj</string>
 
+    <array name="meals_array">
+        <item>Śniadanie</item>
+        <item>Obiad</item>
+        <item>Kolacja</item>
+        <item>Deser</item>
+        <item>Lunch</item>
+        <item>Dowolny</item>
+    </array>
+
 </resources>

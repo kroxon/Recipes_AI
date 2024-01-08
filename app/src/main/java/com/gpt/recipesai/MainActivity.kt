@@ -53,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -148,32 +149,36 @@ fun MainUI(
     onButtonClick: () -> Unit = {}
 ) {
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(id = R.string.command),
-                fontSize = 20.sp,
-                modifier = Modifier
-                    .background(color1, RoundedCornerShape(16.dp))
-                    .padding(8.dp)
-                    .height(24.dp),
-                textAlign = TextAlign.Center
-            )
-            IconButton(
-                onClick = { onButtonClick() },
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Send,
-                    contentDescription = null,
-                    tint = color2
-                )
-            }
-        }
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.Blue)) {
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth(),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Text(
+//                text = stringResource(id = R.string.command),
+//                fontSize = 20.sp,
+//                modifier = Modifier
+//                    .background(color1, RoundedCornerShape(16.dp))
+//                    .padding(8.dp)
+//                    .height(24.dp),
+//                textAlign = TextAlign.Center
+//            )
+//            IconButton(
+//                onClick = { onButtonClick() },
+//                modifier = Modifier.padding(start = 8.dp)
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Default.Send,
+//                    contentDescription = null,
+//                    tint = color2
+//                )
+//            }
+//        }
+
+        SegmentedControl()
 
         if (loading) {
             Row(
@@ -204,7 +209,7 @@ fun MainUI(
 @Composable
 fun SegmentedControl(
     modifier: Modifier = Modifier,
-    items: List<String>,
+    items: List<String> = stringArrayResource(id = R.array.meals_array).toList(),
     defaultSelectedItemIndex: Int = 0,
     useFixedWidth: Boolean = false,
     itemWidth: Dp = 120.dp,
@@ -232,7 +237,7 @@ fun SegmentedControl(
         Row(
             modifier = modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.secondary),
+                .background(color1),
             horizontalArrangement = Arrangement.Center
         ) {
             items.forEachIndexed { index, item ->
@@ -247,14 +252,14 @@ fun SegmentedControl(
                     },
                     colors = CardDefaults.cardColors(
                         containerColor = if (selectedIndex.value == index) {
-                            MaterialTheme.colorScheme.background
+                            color2
                         } else {
-                            MaterialTheme.colorScheme.secondary
+                            color1
                         },
                         contentColor = if (selectedIndex.value == index)
-                            MaterialTheme.colorScheme.scrim
+                            color2
                         else
-                            MaterialTheme.colorScheme.onSecondary
+                            color1
                     ),
                     shape = when (index) {
                         0 -> RoundedCornerShape(
@@ -313,6 +318,6 @@ fun SegmentedControl(
 @Preview
 @Composable
 fun SegmentPreview() {
-    SegmentedControl(items = listOf("Śniadanie", "Obiad", "Kolacja", "Lunch", "Deser", "Dowolne"))
+    SegmentedControl()
 }
 

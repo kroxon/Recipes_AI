@@ -2,4 +2,13 @@
     <string name="app_name">RecipesAI</string>
     <string name="command">Breakfast recipe</string>
     <string name="generate">Generate</string>
+
+    <array name="meals_array">
+        <item>Breakfast</item>
+        <item>Lunch</item>
+        <item>Dinner</item>
+        <item>Dessert</item>
+        <item>Lunch</item>
+        <item>Any</item>
+    </array>
 </resources>
