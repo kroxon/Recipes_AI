@@ -57,6 +57,7 @@ class GptCommunicator {
 
 
     suspend fun fetchGptResponse(promnt: String): Result<GptResponse> {
+        _historymessages.value = listOf(systemPrompt)
         val userPrompt = Message(role = "user", content = promnt)
         _historymessages.getAndUpdate { it + userPrompt }
         val requestBody = buildJsonObject {
