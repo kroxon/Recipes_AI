@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,15 +13,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,9 +44,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,9 +59,11 @@ import androidx.compose.ui.unit.sp
 import com.gpt.recipesai.data.models.Message
 import com.gpt.recipesai.data.network.GptCommunicator
 import com.gpt.recipesai.ui.theme.RecipesAITheme
+import com.gpt.recipesai.ui.theme.color0
 import com.gpt.recipesai.ui.theme.color1
 import com.gpt.recipesai.ui.theme.color2
 import com.gpt.recipesai.ui.theme.color6
+import com.gpt.recipesai.ui.theme.color7
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -59,16 +74,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             RecipesAITheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier
                         .fillMaxSize(),
                     color = color6
                 ) {
-                    val prompt = "Przepis na dziś: \n"
-//                    var gptResponse by remember {
-//                        mutableStateOf("")
-//                    }
 
                     val scope = rememberCoroutineScope()
                     val messages by gpt.historymessages.collectAsState()
@@ -93,6 +103,14 @@ class MainActivity : ComponentActivity() {
                         defaultMealIndex = selectedMealIndex,
                         meals = mealsList,
                         onGenerateClick = {
+                            var prompt = "Napisz nowy przepis"
+                            if (selectedMealIndex != mealsList.size - 1)
+                                prompt += " na " + mealsList.get(selectedMealIndex)
+                            prompt += "."
+                            if (excludedProducts.length != 0)
+                                prompt += " Posiłek nie może zawierać tych rzeczy: \"\n\t + $excludedProducts \n\"."
+                            if (mealCharacteristics.length != 0)
+                                prompt += " Uwzględnij te właściwości produktu: \"\n\t + $mealCharacteristics \n\"."
                             loading = true
                             scope.launch {
                                 val result = gpt.fetchGptResponse(prompt)
@@ -103,46 +121,19 @@ class MainActivity : ComponentActivity() {
                             selectedMealIndex = it
                         },
                         onExcludedInsert = {
-
+                            excludedProducts = it
                         },
                         onFeaturesInserted = {
-
+                            mealCharacteristics = it
                         }
                     )
-
-//                    LaunchedEffect(key1 = Unit) {
-//                        val result = gpt.fetchGptResponse(prompt)
-//
-//                        if (result.isFailure) return@LaunchedEffect
-//
-//                        val mess = result.getOrNull()
-//                            ?.choices
-//                            ?.first()
-//                            ?.message
-//                            ?: return@LaunchedEffect
-//
-//                        val content = mess.content ?: return@LaunchedEffect
-//                        gptResponse = content
-//                    }
-
-//                    LazyColumn {
-//                        item {
-//                            Column(
-//                                modifier = Modifier
-//                                    .height(100.dp)
-//
-//                            ) {
-//                                Text(text = prompt)
-//                                Text(text = gptResponse)
-//                            }
-//                        }
-//                    }
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MainUI(
     messages: List<Message>,
@@ -161,31 +152,7 @@ fun MainUI(
             .background(color6)
             .padding(8.dp)
     ) {
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth(),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Text(
-//                text = stringResource(id = R.string.command),
-//                fontSize = 20.sp,
-//                modifier = Modifier
-//                    .background(color1, RoundedCornerShape(16.dp))
-//                    .padding(8.dp)
-//                    .height(24.dp),
-//                textAlign = TextAlign.Center
-//            )
-//            IconButton(
-//                onClick = { onButtonClick() },
-//                modifier = Modifier.padding(start = 8.dp)
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Send,
-//                    contentDescription = null,
-//                    tint = color2
-//                )
-//            }
-//        }
+
 
         SegmentedControl(
             defaultSelectedItemIndex = defaultMealIndex,
@@ -196,17 +163,48 @@ fun MainUI(
         ExcludedProduct(onExcludedInsert = onExcludedInsert)
         MealsFeatures(onFeaturesInserted = onFeaturesInserted)
 
+        val controller = LocalSoftwareKeyboardController.current
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 16.dp)
+                .clickable {
+                    onGenerateClick()
+                    controller?.hide()
+                },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End
+        ) {
+            Text(
+                text = stringResource(id = R.string.generate),
+                color = color1,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            IconButton(
+                onClick = { onGenerateClick() },
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Send,
+                    contentDescription = null,
+                    tint = color1,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
         if (loading) {
             Row(
                 modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = color1)
             }
             return
         } else {
-            val filteredMessages = messages.filter { it.role != "system" }
+            val filteredMessages = messages.filter { it.role != "system" && it.role != "user" }
             LazyColumn {
                 items(filteredMessages) {
 //                items(messages) {
@@ -310,7 +308,7 @@ fun SegmentedControl(
                                 else
                                     FontWeight.Normal,
                                 color = if (selectedIndex.value == index)
-                                    MaterialTheme.colorScheme.scrim
+                                    color0
                                 else
                                     MaterialTheme.colorScheme.onSecondary
                             ),
@@ -331,15 +329,50 @@ fun ExcludedProduct(
 
 ) {
     var input by remember { mutableStateOf("") }
-    Row {
-        TextField(
-            value = input,
-            onValueChange = { onExcludedInsert(it) },
+    Row(
+        modifier = Modifier
+            .padding(top = 8.dp)
+            .fillMaxWidth()
+    ) {
+        OutlinedTextField(
             shape = ShapeDefaults.Medium,
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            )
+            modifier = Modifier
+                .fillMaxWidth(),
+            value = input,
+            onValueChange = {
+                onExcludedInsert(it)
+                input = it
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = color1,
+                unfocusedBorderColor = color1,
+                cursorColor = color1,
+                disabledLabelColor = color1,
+                focusedLabelColor = color1,
+                focusedContainerColor = color7,
+                unfocusedContainerColor = color7,
+                focusedTextColor = color0,
+                unfocusedTextColor = color0
+            ),
+            label = {
+                Text(
+                    text = stringResource(id = R.string.excluded),
+                    color = color0,
+                    fontSize = 14.sp,
+                )
+            },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null,
+                    modifier = Modifier.clickable {
+                        input = ""
+                        onExcludedInsert("")
+                    },
+                    tint = color0
+                )
+            },
+            maxLines = 3
         )
     }
 }
@@ -349,24 +382,62 @@ fun MealsFeatures(
     onFeaturesInserted: (String) -> Unit
 ) {
     var input by remember { mutableStateOf("") }
-    Row {
-        TextField(
-            value = input,
-            onValueChange = { onFeaturesInserted(it) },
+    Row(modifier = Modifier.padding(vertical = 8.dp)) {
+        OutlinedTextField(
             shape = ShapeDefaults.Medium,
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            )
+            modifier = Modifier
+                .fillMaxWidth(),
+            value = input,
+            onValueChange = {
+                onFeaturesInserted(it)
+                input = it
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = color1,
+                unfocusedBorderColor = color1,
+                cursorColor = color1,
+                disabledLabelColor = color1,
+                focusedLabelColor = color1,
+                focusedContainerColor = color7,
+                unfocusedContainerColor = color7,
+                focusedTextColor = color0,
+                unfocusedTextColor = color0
+            ),
+            label = {
+                Text(
+                    text = stringResource(id = R.string.properties),
+                    color = color0,
+                    fontSize = 14.sp
+                )
+            },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null,
+                    modifier = Modifier.clickable {
+                        input = ""
+                        onFeaturesInserted("")
+                    },
+                    tint = color0
+                )
+            },
+            maxLines = 3
         )
     }
 }
 
-//@Preview
-//@Composable
-//fun MainUIPreview() {
-//    MainUI(messages = emptyList())
-//}
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun MainUIPreview() {
+    MainUI(
+        messages = emptyList(), meals = listOf("Breakfast", "Dinner", "Any"),
+        defaultMealIndex = 1,
+        onExcludedInsert = {},
+        onFeaturesInserted = {},
+        onMealSelection = {},
+        onGenerateClick = {}
+    )
+}
 
 //@Preview
 //@Composable
@@ -377,8 +448,8 @@ fun MealsFeatures(
 //    )
 //}
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ExcludedProductPreview() {
-    ExcludedProduct(onExcludedInsert = {})
-}
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun ExcludedProductPreview() {
+//    ExcludedProduct(onExcludedInsert = {})
+//}
