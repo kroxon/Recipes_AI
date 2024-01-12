@@ -1,4 +1,4 @@
-package com.gpt.recipesai.data.models
+package com.gpt.recipesai.data.models.text
 
 
 import kotlinx.serialization.SerialName

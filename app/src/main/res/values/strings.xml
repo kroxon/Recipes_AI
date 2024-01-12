@@ -9,8 +9,8 @@
         <item>Breakfast</item>
         <item>Lunch</item>
         <item>Dinner</item>
-        <item>Dessert</item>
-        <item>Lunch</item>
+<!--        <item>Dessert</item>-->
+<!--        <item>Lunch</item>-->
         <item>Any</item>
     </array>
 </resources>

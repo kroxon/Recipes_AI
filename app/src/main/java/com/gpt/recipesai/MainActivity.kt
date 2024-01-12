@@ -14,13 +14,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,9 +34,9 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +46,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -56,7 +55,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.gpt.recipesai.data.models.Message
+import coil.compose.AsyncImage
+import com.gpt.recipesai.data.models.text.Message
 import com.gpt.recipesai.data.network.GptCommunicator
 import com.gpt.recipesai.ui.theme.RecipesAITheme
 import com.gpt.recipesai.ui.theme.color0
@@ -82,12 +82,16 @@ class MainActivity : ComponentActivity() {
 
                     val scope = rememberCoroutineScope()
                     val messages by gpt.historymessages.collectAsState()
+
+                    val imageUrl by gpt.imageUrl.collectAsState()
+
                     var loading by remember {
                         mutableStateOf(false)
                     }
 
-                    var selectedMealIndex by remember { mutableStateOf(5) }
                     val mealsList = stringArrayResource(id = R.array.meals_array).toList()
+                    var selectedMealIndex by remember { mutableStateOf(mealsList.size - 1) }
+
 
                     var excludedProducts by remember {
                         mutableStateOf("")
@@ -99,6 +103,7 @@ class MainActivity : ComponentActivity() {
 
                     MainUI(
                         messages = messages,
+                        imageUrl = imageUrl,
                         loading = loading,
                         defaultMealIndex = selectedMealIndex,
                         meals = mealsList,
@@ -111,9 +116,15 @@ class MainActivity : ComponentActivity() {
                                 prompt += " Posiłek nie może zawierać tych rzeczy: \"\n\t + $excludedProducts \n\"."
                             if (mealCharacteristics.length != 0)
                                 prompt += " Uwzględnij te właściwości produktu: \"\n\t + $mealCharacteristics \n\"."
+                            prompt += " Odpowiedź podaj w formacie: nazwa po angielsku \n " +
+                                    "nazwa po polsku \n + reszta przepisu po polsku."
                             loading = true
                             scope.launch {
                                 val result = gpt.fetchGptResponse(prompt)
+                                val imagePrompt = messages.last().toString().substringBefore('\n')
+                                val result2 = gpt.fetchImageGeneration(prompt = "Meal: $imagePrompt")
+//                                val result2 =
+//                                    gpt.fetchImageGeneration(prompt = "Spaghetti with shrimp and asparagus")
                                 loading = false
                             }
                         },
@@ -137,6 +148,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainUI(
     messages: List<Message>,
+    imageUrl: String,
     meals: List<String>,
     defaultMealIndex: Int,
     loading: Boolean = false,
@@ -210,7 +222,27 @@ fun MainUI(
 //                items(messages) {
                     it.content ?: return@items
                     Text(
-                        text = it.content,
+                        text = it.content.substringAfter('\n').substringBefore('\n'),
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        AsyncImage(
+                            model = imageUrl, contentDescription = null,
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .size(300.dp)
+                        )
+                    }
+//                    Text(text = imageUrl)
+                    Text(
+                        text = it.content.substringAfter('\n').substringAfter('\n'),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -430,7 +462,9 @@ fun MealsFeatures(
 @Composable
 fun MainUIPreview() {
     MainUI(
-        messages = emptyList(), meals = listOf("Breakfast", "Dinner", "Any"),
+        messages = emptyList(),
+        imageUrl = "",
+        meals = listOf("Breakfast", "Dinner", "Any"),
         defaultMealIndex = 1,
         onExcludedInsert = {},
         onFeaturesInserted = {},
