@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Śniadania AI</string>
-    <string name="command">Generuj nowe śniadanie!</string>
+    <string name="app_name">Posiłki AI</string>
+    <string name="command">Generuj nowy posiłek!</string>
     <string name="generate">Generuj</string>
     <string name="excluded">Wykluczenia np. kurczak, nabiał</string>
     <string name="properties">Cechy posiłku np. kuchnia włoska, szybki, wege</string>
@@ -10,8 +10,6 @@
         <item>Śniadanie</item>
         <item>Obiad</item>
         <item>Kolacja</item>
-<!--        <item>Deser</item>-->
-<!--        <item>Lunch</item>-->
         <item>Dowolny</item>
     </array>
 
