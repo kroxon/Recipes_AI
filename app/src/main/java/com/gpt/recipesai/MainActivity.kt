@@ -65,6 +65,7 @@ import com.gpt.recipesai.ui.theme.color1
 import com.gpt.recipesai.ui.theme.color2
 import com.gpt.recipesai.ui.theme.color6
 import com.gpt.recipesai.ui.theme.color7
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -130,15 +131,19 @@ class MainActivity : ComponentActivity() {
                                 R.string.rest_prompt
                             )
                             loading = true
+                            loading2 = true
                             scope.launch {
-                                val result = gpt.fetchGptResponse(prompt)
-                                val imagePrompt = messages.last().toString().substringBefore('\n')
-                                val result2 =
-                                    gpt.fetchImageGeneration(prompt = "Meal: $imagePrompt")
-//                                val result2 =
-//                                    gpt.fetchImageGeneration(prompt = "Spaghetti with shrimp and asparagus")
-                                loading2 = true
+                                val result = async { gpt.fetchGptResponse(prompt) }.await()
+                                loading = false
+
+                                val lastMessage = messages.lastOrNull()
+
+                                val imagePrompt = lastMessage?.content?.substringBefore("\n") ?: ""
+                                val result2 = async { gpt.fetchImageGeneration(prompt = "Meal: $imagePrompt") }.await()
+
+                                loading2 = false
                             }
+
                         },
                         onMealSelection = {
                             selectedMealIndex = it
@@ -234,11 +239,8 @@ fun MainUI(
                 items(filteredMessages) {
 //                items(messages) {
                     it.content ?: return@items
-
-                    // test
-                    Text(text = it.content + "\n")
                     Text(
-                        text = it.content.substringAfter("\n").substringBefore("\n"),
+                        text = it.content.substringBefore("\n"),
                         modifier = Modifier
                             .fillMaxWidth(),
                         fontWeight = FontWeight.Bold,
