@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -88,6 +89,9 @@ class MainActivity : ComponentActivity() {
                     var loading by remember {
                         mutableStateOf(false)
                     }
+                    var loading2 by remember {
+                        mutableStateOf(false)
+                    }
 
                     val mealsList = stringArrayResource(id = R.array.meals_array).toList()
                     var selectedMealIndex by remember { mutableStateOf(mealsList.size - 1) }
@@ -101,31 +105,39 @@ class MainActivity : ComponentActivity() {
                         mutableStateOf("")
                     }
 
+                    val context = LocalContext.current
+
                     MainUI(
                         messages = messages,
                         imageUrl = imageUrl,
                         loading = loading,
+                        loading2 = loading2,
                         defaultMealIndex = selectedMealIndex,
                         meals = mealsList,
                         onGenerateClick = {
-                            var prompt = "Napisz nowy przepis"
+                            var prompt = context.getString(R.string.create_recipe)
                             if (selectedMealIndex != mealsList.size - 1)
-                                prompt += " na " + mealsList.get(selectedMealIndex)
+                                prompt += context.getString(R.string.for_) + mealsList.get(
+                                    selectedMealIndex
+                                )
                             prompt += "."
                             if (excludedProducts.length != 0)
-                                prompt += " Posiłek nie może zawierać tych rzeczy: \"\n\t + $excludedProducts \n\"."
+                                prompt += context.getString(R.string.exclusions) + "\"\n\t + $excludedProducts \n\"."
                             if (mealCharacteristics.length != 0)
-                                prompt += " Uwzględnij te właściwości produktu: \"\n\t + $mealCharacteristics \n\"."
-                            prompt += " Odpowiedź podaj w formacie: nazwa po angielsku \n " +
-                                    "nazwa po polsku \n + reszta przepisu po polsku."
+                                prompt += context.getString(R.string.meal_properties) + "\"\n\t + $mealCharacteristics \n\"."
+                            prompt += context.getString(R.string.reply_english) + "\n " +
+                                    context.getString(R.string.reply_foreign) + " \n" + context.getString(
+                                R.string.rest_prompt
+                            )
                             loading = true
                             scope.launch {
                                 val result = gpt.fetchGptResponse(prompt)
                                 val imagePrompt = messages.last().toString().substringBefore('\n')
-                                val result2 = gpt.fetchImageGeneration(prompt = "Meal: $imagePrompt")
+                                val result2 =
+                                    gpt.fetchImageGeneration(prompt = "Meal: $imagePrompt")
 //                                val result2 =
 //                                    gpt.fetchImageGeneration(prompt = "Spaghetti with shrimp and asparagus")
-                                loading = false
+                                loading2 = true
                             }
                         },
                         onMealSelection = {
@@ -152,6 +164,7 @@ fun MainUI(
     meals: List<String>,
     defaultMealIndex: Int,
     loading: Boolean = false,
+    loading2: Boolean = false,
     onGenerateClick: () -> Unit = {},
     onMealSelection: (selectedMealIndex: Int) -> Unit,
     onExcludedInsert: (String) -> Unit,
@@ -221,8 +234,11 @@ fun MainUI(
                 items(filteredMessages) {
 //                items(messages) {
                     it.content ?: return@items
+
+                    // test
+                    Text(text = it.content + "\n")
                     Text(
-                        text = it.content.substringAfter('\n').substringBefore('\n'),
+                        text = it.content.substringAfter("\n").substringBefore("\n"),
                         modifier = Modifier
                             .fillMaxWidth(),
                         fontWeight = FontWeight.Bold,
@@ -233,16 +249,20 @@ fun MainUI(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        AsyncImage(
-                            model = imageUrl, contentDescription = null,
-                            modifier = Modifier
-                                .padding(bottom = 8.dp)
-                                .size(300.dp)
-                        )
+                        if (loading2) {
+                            CircularProgressIndicator(color = color1)
+                        } else {
+                            AsyncImage(
+                                model = imageUrl, contentDescription = null,
+                                modifier = Modifier
+                                    .padding(bottom = 8.dp)
+                                    .size(300.dp)
+                            )
+                        }
                     }
 //                    Text(text = imageUrl)
                     Text(
-                        text = it.content.substringAfter('\n').substringAfter('\n'),
+                        text = it.content.substringAfter("\n").substringAfter("\n"),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

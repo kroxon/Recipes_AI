@@ -12,5 +12,13 @@
         <item>Kolacja</item>
         <item>Dowolny</item>
     </array>
+    <string name="system_prompt">Jesteś pomocnym asystentem i podajesz w żadanej formie przepis na posiłek.</string>
+    <string name="create_recipe">Napisz nowy przepis</string>
+    <string name="for_">" na "</string>
+    <string name="exclusions">" Posiłek nie może zawierać tych rzeczy: "</string>
+    <string name="meal_properties">" Uwzględnij te właściwości przepisu: "</string>
+    <string name="reply_english">" Odpowiedź podaj w formacie: nazwa po angielsku "</string>
+    <string name="reply_foreign">nazwa po polsku</string>
+    <string name="rest_prompt">reszta przepisu po polsku.</string>
 
 </resources>

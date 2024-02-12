@@ -13,4 +13,18 @@
 <!--        <item>Lunch</item>-->
         <item>Any</item>
     </array>
+
+    <string name="system_prompt">You are a helpful assistant and provide a recipe for the meal in no form at all.</string>
+    <string name="create_recipe">Write a new recipe</string>
+    <string name="for_">" for "</string>
+    <string name="exclusions">" The meal must not contain these things: "</string>
+    <string name="meal_properties">" Consider these characteristics of the recipe: "</string>
+    <string name="reply_english">" Give your answer in the format: name in English "</string>
+    <string name="reply_foreign">name in English</string>
+    <string name="rest_prompt">the rest of the recipe in English. E.g. Roast chicken with broccoli \n
+                                Roast chicken with broccoli \n
+                                ingredients: \n
+                                instructions
+                                </string>
+
 </resources>

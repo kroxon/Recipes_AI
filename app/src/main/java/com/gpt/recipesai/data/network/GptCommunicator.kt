@@ -1,5 +1,8 @@
 package com.gpt.recipesai.data.network
 
+import android.content.Context
+import androidx.test.platform.app.InstrumentationRegistry
+import com.gpt.recipesai.R
 import com.gpt.recipesai.data.api_keys.API
 import com.gpt.recipesai.data.models.image.GptImageResponse
 import com.gpt.recipesai.data.models.text.GptResponse
@@ -48,7 +51,7 @@ class GptCommunicator {
 
     val systemPrompt = Message(
         role = "system",
-        content = "Jesteś pomocnym asystentem i podajesz w ładnej " + "formie przepis na posiłek."
+        content = R.string.system_prompt.toString()
     )
 
     private val _historymessages = MutableStateFlow(listOf(systemPrompt))
