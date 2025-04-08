@@ -1,0 +1,1 @@
+An Android app that uses ChatGPT's API to generate personalized meal recipes based on user-defined preferences and dietary restrictions. Users can specify desired features and exclusions. The app also generates a visual representation of the suggested meal.
